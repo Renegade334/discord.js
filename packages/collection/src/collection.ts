@@ -11,15 +11,6 @@ export interface CollectionConstructor {
 }
 
 /**
- * Represents an immutable version of a collection
- */
-export type ReadonlyCollection<Key, Value> = Omit<
-	Collection<Key, Value>,
-	'clear' | 'delete' | 'ensure' | 'forEach' | 'get' | 'reverse' | 'set' | 'sort' | 'sweep'
-> &
-	ReadonlyMap<Key, Value>;
-
-/**
  * Separate interface for the constructor so that emitted js does not have a constructor that overwrites itself
  *
  * @internal
@@ -35,7 +26,7 @@ export interface Collection<Key, Value> extends Map<Key, Value> {
  * @typeParam Key - The key type this collection holds
  * @typeParam Value - The value type this collection holds
  */
-export class Collection<Key, Value> extends Map<Key, Value> {
+export class Collection<Key, Value> extends Map<Key, Value> implements ReadonlyCollection<Key, Value> {
 	/**
 	 * Obtains the value of the given key if it exists, otherwise sets and returns the value provided by the default value generator.
 	 *
@@ -1034,6 +1025,150 @@ export class Collection<Key, Value> extends Map<Key, Value> {
 
 		return coll;
 	}
+}
+
+/**
+ * Represents an immutable version of a {@link Collection}.
+ */
+export interface ReadonlyCollection<Key, Value> extends ReadonlyMap<Key, Value> {
+	at(index: number): Value | undefined;
+	clone(): Collection<Key, Value>;
+	concat(...collections: ReadonlyCollection<Key, Value>[]): Collection<Key, Value>;
+	difference(other: ReadonlyCollection<Key, any>): Collection<Key, Value>;
+	each(fn: (value: Value, key: Key, collection: this) => void): this;
+	each<This>(fn: (this: This, value: Value, key: Key, collection: this) => void, thisArg: This): this;
+	equals(collection: ReadonlyCollection<Key, Value>): boolean;
+	every<NewKey extends Key>(
+		fn: (value: Value, key: Key, collection: this) => key is NewKey,
+	): this is ReadonlyCollection<NewKey, Value>;
+	every<NewValue extends Value>(
+		fn: (value: Value, key: Key, collection: this) => value is NewValue,
+	): this is ReadonlyCollection<Key, NewValue>;
+	every(fn: (value: Value, key: Key, collection: this) => unknown): boolean;
+	every<This, NewKey extends Key>(
+		fn: (this: This, value: Value, key: Key, collection: this) => key is NewKey,
+		thisArg: This,
+	): this is ReadonlyCollection<NewKey, Value>;
+	every<This, NewValue extends Value>(
+		fn: (this: This, value: Value, key: Key, collection: this) => value is NewValue,
+		thisArg: This,
+	): this is ReadonlyCollection<Key, NewValue>;
+	every<This>(fn: (this: This, value: Value, key: Key, collection: this) => unknown, thisArg: This): boolean;
+	filter<NewKey extends Key>(
+		fn: (value: Value, key: Key, collection: this) => key is NewKey,
+	): Collection<NewKey, Value>;
+	filter<NewValue extends Value>(
+		fn: (value: Value, key: Key, collection: this) => value is NewValue,
+	): Collection<Key, NewValue>;
+	filter(fn: (value: Value, key: Key, collection: this) => unknown): Collection<Key, Value>;
+	filter<This, NewKey extends Key>(
+		fn: (this: This, value: Value, key: Key, collection: this) => key is NewKey,
+		thisArg: This,
+	): Collection<NewKey, Value>;
+	filter<This, NewValue extends Value>(
+		fn: (this: This, value: Value, key: Key, collection: this) => value is NewValue,
+		thisArg: This,
+	): Collection<Key, NewValue>;
+	filter<This>(
+		fn: (this: This, value: Value, key: Key, collection: this) => unknown,
+		thisArg: This,
+	): Collection<Key, Value>;
+	find<NewValue extends Value>(
+		fn: (value: Value, key: Key, collection: this) => value is NewValue,
+	): NewValue | undefined;
+	find(fn: (value: Value, key: Key, collection: this) => unknown): Value | undefined;
+	find<This, NewValue extends Value>(
+		fn: (this: This, value: Value, key: Key, collection: this) => value is NewValue,
+		thisArg: This,
+	): NewValue | undefined;
+	find<This>(fn: (this: This, value: Value, key: Key, collection: this) => unknown, thisArg: This): Value | undefined;
+	findKey<NewKey extends Key>(fn: (value: Value, key: Key, collection: this) => key is NewKey): NewKey | undefined;
+	findKey(fn: (value: Value, key: Key, collection: this) => unknown): Key | undefined;
+	findKey<This, NewKey extends Key>(
+		fn: (this: This, value: Value, key: Key, collection: this) => key is NewKey,
+		thisArg: This,
+	): NewKey | undefined;
+	findKey<This>(fn: (this: This, value: Value, key: Key, collection: this) => unknown, thisArg: This): Key | undefined;
+	findLast<NewValue extends Value>(
+		fn: (value: Value, key: Key, collection: this) => value is NewValue,
+	): NewValue | undefined;
+	findLast(fn: (value: Value, key: Key, collection: this) => unknown): Value | undefined;
+	findLast<This, NewValue extends Value>(
+		fn: (this: This, value: Value, key: Key, collection: this) => value is NewValue,
+		thisArg: This,
+	): NewValue | undefined;
+	findLast<This>(
+		fn: (this: This, value: Value, key: Key, collection: this) => unknown,
+		thisArg: This,
+	): Value | undefined;
+	findLastKey<NewKey extends Key>(fn: (value: Value, key: Key, collection: this) => key is NewKey): NewKey | undefined;
+	findLastKey(fn: (value: Value, key: Key, collection: this) => unknown): Key | undefined;
+	findLastKey<This, NewKey extends Key>(
+		fn: (this: This, value: Value, key: Key, collection: this) => key is NewKey,
+		thisArg: This,
+	): NewKey | undefined;
+	findLastKey<This>(
+		fn: (this: This, value: Value, key: Key, collection: this) => unknown,
+		thisArg: This,
+	): Key | undefined;
+	first(): Value | undefined;
+	first(amount: number): Value[];
+	firstKey(): Key | undefined;
+	firstKey(amount: number): Key[];
+	flatMap<NewValue>(
+		fn: (value: Value, key: Key, collection: this) => Collection<Key, NewValue>,
+	): Collection<Key, NewValue>;
+	flatMap<NewValue, This>(
+		fn: (this: This, value: Value, key: Key, collection: this) => Collection<Key, NewValue>,
+		thisArg: This,
+	): Collection<Key, NewValue>;
+	hasAll(...keys: Key[]): boolean;
+	hasAny(...keys: Key[]): boolean;
+	intersection(other: ReadonlyCollection<Key, any>): Collection<Key, Value>;
+	keyAt(index: number): Key | undefined;
+	last(): Value | undefined;
+	last(amount: number): Value[];
+	lastKey(): Key | undefined;
+	lastKey(amount: number): Key[];
+	map<NewValue>(fn: (value: Value, key: Key, collection: this) => NewValue): NewValue[];
+	map<This, NewValue>(
+		fn: (this: This, value: Value, key: Key, collection: this) => NewValue,
+		thisArg: This,
+	): NewValue[];
+	mapValues<NewValue>(fn: (value: Value, key: Key, collection: this) => NewValue): Collection<Key, NewValue>;
+	mapValues<This, NewValue>(
+		fn: (this: This, value: Value, key: Key, collection: this) => NewValue,
+		thisArg: This,
+	): Collection<Key, NewValue>;
+	merge<OtherValue, ResultValue>(
+		other: ReadonlyCollection<Key, OtherValue>,
+		whenInSelf: (value: Value, key: Key) => Keep<ResultValue>,
+		whenInOther: (valueOther: OtherValue, key: Key) => Keep<ResultValue>,
+		whenInBoth: (value: Value, valueOther: OtherValue, key: Key) => Keep<ResultValue>,
+	): Collection<Key, ResultValue>;
+	random(): Value | undefined;
+	random(amount: number): Value[];
+	randomKey(): Key | undefined;
+	randomKey(amount: number): Key[];
+	reduce(fn: (accumulator: Value, value: Value, key: Key, collection: this) => Value, initialValue?: Value): Value;
+	reduce<InitialValue>(
+		fn: (accumulator: InitialValue, value: Value, key: Key, collection: this) => InitialValue,
+		initialValue: InitialValue,
+	): InitialValue;
+	reduceRight(fn: (accumulator: Value, value: Value, key: Key, collection: this) => Value, initialValue?: Value): Value;
+	reduceRight<InitialValue>(
+		fn: (accumulator: InitialValue, value: Value, key: Key, collection: this) => InitialValue,
+		initialValue: InitialValue,
+	): InitialValue;
+	some(fn: (value: Value, key: Key, collection: this) => unknown): boolean;
+	some<This>(fn: (this: This, value: Value, key: Key, collection: this) => unknown, thisArg: This): boolean;
+	symmetricDifference<OtherValue>(other: ReadonlyCollection<Key, OtherValue>): Collection<Key, OtherValue | Value>;
+	tap(fn: (collection: this) => void): this;
+	tap<This>(fn: (this: This, collection: this) => void, thisArg: This): this;
+	toJSON(): any;
+	toReversed(): Collection<Key, Value>;
+	toSorted(compareFunction?: Comparator<Key, Value>): Collection<Key, Value>;
+	union<OtherValue>(other: ReadonlyCollection<Key, OtherValue>): Collection<Key, OtherValue | Value>;
 }
 
 /**
